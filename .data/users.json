@@ -1,0 +1,13 @@
+[
+  {
+    "username": "trip",
+    "email": "demo@travel-planner.com",
+    "firstName": "Demo",
+    "lastName": "User",
+    "password": "planner",
+    "phoneNumber": "1234567890",
+    "address": "123 Travel Street",
+    "country": "United States",
+    "dateOfBirth": "1990-01-01"
+  }
+]
