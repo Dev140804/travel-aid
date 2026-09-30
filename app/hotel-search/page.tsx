@@ -5,6 +5,7 @@ export const dynamic = 'force-dynamic';
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import LoadingOverlay from "@/components/LoadingOverlay";
+import { IconSettings, IconMoney, IconPin, IconCalendar } from "@/components/Icons";
 
 type Place = {
   id?: string;
@@ -372,8 +373,8 @@ export default function HotelSearchPage() {
             className="px-4 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-lg font-semibold transition-colors border border-slate-600 cursor-pointer"
           >
             <option value="none">Sort By</option>
-            <option value="price-low">💰 Price: Low to High</option>
-            <option value="price-high">💰 Price: High to Low</option>
+            <option value="price-low">{""}<IconMoney style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: 6, color: 'var(--theme-accent)' }} /> Price: Low to High</option>
+            <option value="price-high">{""}<IconMoney style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: 6, color: 'var(--theme-accent)' }} /> Price: High to Low</option>
             <option value="rating-high">⭐ Rating: High to Low</option>
             <option value="rating-low">⭐ Rating: Low to High</option>
           </select>
@@ -396,7 +397,7 @@ export default function HotelSearchPage() {
             <div className="bg-slate-800 rounded-lg max-w-md w-full mx-4 border border-white/20 shadow-2xl relative">
               {/* Header */}
               <div className="px-6 pt-6 pb-2 flex items-center justify-between">
-                <h2 className="text-lg font-bold text-white flex items-center gap-2">⚙️ Filter Options</h2>
+                <h2 className="text-lg font-bold text-white flex items-center gap-2"><IconSettings style={{ color: 'var(--theme-accent)' }} /> Filter Options</h2>
                 {/* Close button at top right inside the box */}
                 <button
                   onClick={() => setShowFilterModal(false)}
@@ -549,7 +550,7 @@ export default function HotelSearchPage() {
                     <h3 className="text-xl font-bold text-white mb-1">{item.name}</h3>
 
                     {(item as any).address && (
-                      <p className="text-sm text-slate-300 mb-2">📍 {(item as any).address}</p>
+                      <p className="text-sm text-slate-300 mb-2"><IconPin style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: 6, color: 'var(--theme-accent)' }} /> {(item as any).address}</p>
                     )}
 
                     {(item as any).phone && (
@@ -573,7 +574,7 @@ export default function HotelSearchPage() {
                               ₹{((item as any).baseNightly || 0).toLocaleString("en-IN")} <span className="text-sm text-slate-300">/ night</span>
                             </p>
                             <p className="text-sm text-slate-300 mt-1">
-                              📅 {days} days / {nights} night{nights > 1 ? 's' : ''}
+                              <IconCalendar style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: 6, color: 'var(--theme-accent)' }} /> {days} days / {nights} night{nights > 1 ? 's' : ''}
                             </p>
                             <p className="text-sm text-slate-300 mt-1">
                               💰 ₹{(((item as any).baseNightly || 0) * nights).toLocaleString("en-IN")} <span className="text-xs text-slate-400">total</span>

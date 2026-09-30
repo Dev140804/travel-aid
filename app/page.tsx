@@ -90,8 +90,8 @@ export default function Home() {
                 <div className="group relative">
                   <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 rounded-2xl opacity-0 group-hover:opacity-100 transition-all duration-300 blur-xl"></div>
                   <div className="relative flex flex-col items-center text-center p-8 bg-white/10 rounded-2xl backdrop-blur-md border border-white/20 group-hover:border-blue-400/50 transition-all transform group-hover:-translate-y-2">
-                  <div className="w-16 h-16 bg-gradient-to-r from-[#D4AF37] to-[#E8C547] rounded-xl flex items-center justify-center mb-6 shadow-lg shadow-[#D4AF37]/30">
-                      <FaBolt className="w-8 h-8 text-[#0B1F3A]" />
+                    <div className="w-16 h-16 bg-gradient-to-r from-[#D4AF37] to-[#E8C547] rounded-xl flex items-center justify-center mb-6 shadow-lg shadow-[#D4AF37]/30">
+                      <FaBolt className="w-8 h-8 theme-accent-fill" />
                     </div>
                     <h3 className="text-2xl font-bold mb-3 text-[#D4AF37]">
                       AI-Powered Itineraries
@@ -108,8 +108,8 @@ export default function Home() {
                 <div className="group relative">
                   <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-2xl opacity-0 group-hover:opacity-100 transition-all duration-300 blur-xl"></div>
                   <div className="relative flex flex-col items-center text-center p-8 bg-white/10 rounded-2xl backdrop-blur-md border border-[#D4AF37]/20 group-hover:border-[#D4AF37]/50 transition-all transform group-hover:-translate-y-2">
-                    <div className="w-16 h-16 bg-gradient-to-r from-[#D4AF37] to-[#E8C547] rounded-xl flex items-center justify-center mb-6 shadow-lg shadow-[#D4AF37]/30">
-                      <MdDirectionsRun className="w-8 h-8 text-[#0B1F3A]" />
+                      <div className="w-16 h-16 bg-gradient-to-r from-[#D4AF37] to-[#E8C547] rounded-xl flex items-center justify-center mb-6 shadow-lg shadow-[#D4AF37]/30">
+                      <MdDirectionsRun className="w-8 h-8 theme-accent-fill" />
                     </div>
                     <h3 className="text-2xl font-bold mb-3 text-[#D4AF37]">
                       Smart Time Management
@@ -125,8 +125,8 @@ export default function Home() {
                 <div className="group relative">
                   <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-2xl opacity-0 group-hover:opacity-100 transition-all duration-300 blur-xl"></div>
                   <div className="relative flex flex-col items-center text-center p-8 bg-white/10 rounded-2xl backdrop-blur-md border border-[#D4AF37]/20 group-hover:border-[#D4AF37]/50 transition-all transform group-hover:-translate-y-2">
-                    <div className="w-16 h-16 bg-gradient-to-r from-[#D4AF37] to-[#E8C547] rounded-xl flex items-center justify-center mb-6 shadow-lg shadow-[#D4AF37]/30">
-                      <FaCloudRain className="w-8 h-8 text-[#0B1F3A]" />
+                      <div className="w-16 h-16 bg-gradient-to-r from-[#D4AF37] to-[#E8C547] rounded-xl flex items-center justify-center mb-6 shadow-lg shadow-[#D4AF37]/30">
+                      <FaCloudRain className="w-8 h-8 theme-accent-fill" />
                     </div>
                     <h3 className="text-2xl font-bold mb-3 text-[#D4AF37]">
                       Weather Adaptive

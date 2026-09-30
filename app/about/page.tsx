@@ -68,7 +68,7 @@ export default function About() {
         <main className="flex-1 flex flex-col">
           <section className="flex flex-col items-center justify-center pt-20 pb-20 px-4 text-center">
             <div className="mb-6 animate-bounce">
-              <FaCircleInfo className="w-24 h-24 text-[#D4AF37] mx-auto filter drop-shadow-lg" />
+              <FaCircleInfo className="w-24 h-24 mx-auto filter drop-shadow-lg theme-accent" />
             </div>
             <h1 className="max-w-4xl text-6xl md:text-7xl font-black tracking-tight mb-6 text-transparent bg-clip-text bg-gradient-to-r from-[#D4AF37] via-[#E8C547] to-[#D4AF37] drop-shadow-lg">
               About Trip Planner
@@ -83,7 +83,7 @@ export default function About() {
               {/* Mission */}
               <div className="bg-white/10 backdrop-blur-md rounded-2xl border border-[#D4AF37]/30 p-8 md:p-12">
                 <div className="flex items-start gap-6">
-                  <FaBolt className="w-10 h-10 text-[#D4AF37] flex-shrink-0 mt-2" />
+                  <FaBolt className="w-10 h-10 flex-shrink-0 mt-2 theme-accent" />
                   <div>
                     <h2 className="text-3xl font-bold text-[#D4AF37] mb-4">Our Mission</h2>
                     <p className="text-gray-300 text-lg leading-relaxed">
@@ -96,25 +96,25 @@ export default function About() {
               {/* Features */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="bg-white/10 backdrop-blur-md rounded-2xl border border-[#D4AF37]/30 p-8">
-                  <FaBolt className="w-8 h-8 text-[#D4AF37] mb-4" />
+                  <FaBolt className="w-8 h-8 mb-4 theme-accent" />
                   <h3 className="text-2xl font-bold text-[#D4AF37] mb-2">AI-Powered</h3>
                   <p className="text-gray-300">Advanced machine learning algorithms optimize your travel experience with intelligent recommendations.</p>
                 </div>
 
                 <div className="bg-white/10 backdrop-blur-md rounded-2xl border border-[#D4AF37]/30 p-8">
-                  <FaGlobe className="w-8 h-8 text-[#D4AF37] mb-4" />
+                  <FaGlobe className="w-8 h-8 mb-4 theme-accent" />
                   <h3 className="text-2xl font-bold text-[#D4AF37] mb-2">Global Coverage</h3>
                   <p className="text-gray-300">Plan trips to destinations worldwide with real-time data on attractions, weather, and logistics.</p>
                 </div>
 
                 <div className="bg-white/10 backdrop-blur-md rounded-2xl border border-[#D4AF37]/30 p-8">
-                  <FaHeart className="w-8 h-8 text-[#D4AF37] mb-4" />
+                  <FaHeart className="w-8 h-8 mb-4 theme-accent" />
                   <h3 className="text-2xl font-bold text-[#D4AF37] mb-2">Personalized</h3>
                   <p className="text-gray-300">Every itinerary is customized based on your unique preferences, budget, and travel style.</p>
                 </div>
 
                 <div className="bg-white/10 backdrop-blur-md rounded-2xl border border-[#D4AF37]/30 p-8">
-                  <BoltIcon className="w-8 h-8 text-[#D4AF37] mb-4" />
+                  <BoltIcon className="w-8 h-8 mb-4 theme-accent" />
                   <h3 className="text-2xl font-bold text-[#D4AF37] mb-2">Real-Time Updates</h3>
                   <p className="text-gray-300">Stay informed with live weather forecasts, traffic updates, and event recommendations.</p>
                 </div>

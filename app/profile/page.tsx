@@ -73,7 +73,7 @@ export default function Profile() {
         <main className="flex-1 flex flex-col">
           <section className="flex flex-col items-center justify-center pt-20 pb-20 px-4 text-center">
             <div className="mb-6 animate-bounce">
-              <FaUser className="w-24 h-24 text-[#D4AF37] mx-auto filter drop-shadow-lg" />
+              <FaUser className="w-24 h-24 mx-auto filter drop-shadow-lg theme-accent" />
             </div>
             <h1 className="max-w-4xl text-6xl md:text-7xl font-black tracking-tight mb-6 text-transparent bg-clip-text bg-gradient-to-r from-[#D4AF37] via-[#E8C547] to-[#D4AF37] drop-shadow-lg">
               Your Profile
@@ -88,7 +88,7 @@ export default function Profile() {
               <div className="bg-white/10 backdrop-blur-md rounded-2xl border border-[#D4AF37]/30 p-8 shadow-lg">
                 <div className="space-y-6">
                   <div className="flex items-center gap-4 pb-6 border-b border-[#D4AF37]/20">
-                    <FaUser className="text-[#D4AF37] w-6 h-6" />
+                    <FaUser className="w-6 h-6 theme-accent" />
                     <div className="flex-1">
                       <p className="text-sm text-gray-400 mb-1">Username</p>
                       <p className="text-lg text-[#F8F9FB] font-semibold">{userName}</p>
@@ -96,7 +96,7 @@ export default function Profile() {
                   </div>
 
                   <div className="flex items-center gap-4 pb-6 border-b border-[#D4AF37]/20">
-                    <FaUser className="text-[#D4AF37] w-6 h-6" />
+                    <FaUser className="w-6 h-6 theme-accent" />
                     <div className="flex-1">
                       <p className="text-sm text-gray-400 mb-1">Display Name</p>
                       <p className="text-lg text-[#F8F9FB] font-semibold">{userFirstName}</p>
@@ -104,7 +104,7 @@ export default function Profile() {
                   </div>
 
                   <div className="flex items-center gap-4 pb-6 border-b border-[#D4AF37]/20">
-                    <FaEnvelope className="text-[#D4AF37] w-6 h-6" />
+                    <FaEnvelope className="w-6 h-6 theme-accent" />
                     <div className="flex-1">
                       <p className="text-sm text-gray-400 mb-1">Email</p>
                       <p className="text-lg text-[#F8F9FB] font-semibold">user@tripplanner.com</p>
@@ -112,7 +112,7 @@ export default function Profile() {
                   </div>
 
                   <div className="flex items-center gap-4 pb-6 border-b border-[#D4AF37]/20">
-                    <FaPhone className="text-[#D4AF37] w-6 h-6" />
+                    <FaPhone className="w-6 h-6 theme-accent" />
                     <div className="flex-1">
                       <p className="text-sm text-gray-400 mb-1">Phone</p>
                       <p className="text-lg text-[#F8F9FB] font-semibold">+1 (555) 123-4567</p>
@@ -120,7 +120,7 @@ export default function Profile() {
                   </div>
 
                   <div className="flex items-center gap-4 pb-6 border-b border-[#D4AF37]/20">
-                    <FaMapPin className="text-[#D4AF37] w-6 h-6" />
+                    <FaMapPin className="w-6 h-6 theme-accent" />
                     <div className="flex-1">
                       <p className="text-sm text-gray-400 mb-1">Location</p>
                       <p className="text-lg text-[#F8F9FB] font-semibold">New York, USA</p>
@@ -128,7 +128,7 @@ export default function Profile() {
                   </div>
 
                   <div className="flex items-center gap-4">
-                    <FaCalendar className="text-[#D4AF37] w-6 h-6" />
+                    <FaCalendar className="w-6 h-6 theme-accent" />
                     <div className="flex-1">
                       <p className="text-sm text-gray-400 mb-1">Member Since</p>
                       <p className="text-lg text-[#F8F9FB] font-semibold">March 2026</p>

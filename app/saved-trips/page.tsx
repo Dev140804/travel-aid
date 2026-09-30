@@ -122,7 +122,7 @@ export default function SavedTrips() {
         <main className="flex-1 flex flex-col">
           <section className="flex flex-col items-center justify-center pt-20 pb-20 px-4 text-center">
             <div className="mb-6 animate-bounce">
-              <FaBookmark className="w-24 h-24 text-[#D4AF37] mx-auto filter drop-shadow-lg" />
+              <FaBookmark className="w-24 h-24 mx-auto filter drop-shadow-lg theme-accent" />
             </div>
             <h1 className="max-w-4xl text-6xl md:text-7xl font-black tracking-tight mb-6 text-transparent bg-clip-text bg-gradient-to-r from-[#D4AF37] via-[#E8C547] to-[#D4AF37] drop-shadow-lg">
               Saved Trips
@@ -154,18 +154,18 @@ export default function SavedTrips() {
                             className="p-2 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-all disabled:opacity-50 cursor-pointer"
                             title="Delete trip"
                           >
-                            <FaTrash className="w-4 h-4" />
+                            <FaTrash className="w-4 h-4 theme-accent" />
                           </button>
                         </div>
 
                         <p className="text-gray-300 text-lg flex items-center gap-2">
-                          <span className="text-[#D4AF37]">🏖️</span>
+                          <span className="theme-accent">🏖️</span>
                           {trip.days} {trip.days === 1 ? "Day" : "Days"}
                         </p>
 
                         <div className="flex items-center gap-4 pt-4 border-t border-[#D4AF37]/20">
                           <div className="flex items-center gap-2 text-gray-300">
-                            <FaCalendar className="w-4 h-4 text-[#D4AF37]" />
+                            <FaCalendar className="w-4 h-4 theme-accent" />
                             <span className="text-sm">Created {formatDate(trip.createdAt)}</span>
                           </div>
                         </div>
@@ -175,7 +175,7 @@ export default function SavedTrips() {
                           className="inline-flex items-center gap-2 mt-4 px-6 py-2 text-sm font-bold text-[#D4AF37] hover:text-[#E8C547] transition-colors group/link"
                         >
                           View Itinerary
-                          <FaArrowRight className="w-4 h-4 group-hover/link:translate-x-1 transition-transform" />
+                          <FaArrowRight className="w-4 h-4 theme-accent group-hover/link:translate-x-1 transition-transform" />
                         </Link>
                       </div>
                     </div>

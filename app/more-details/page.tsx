@@ -120,7 +120,7 @@ function PlaceDetailsPageContent() {
             onClick={() => router.back()}
             className="flex items-center gap-2 text-slate-300 hover:text-blue-400 transition-colors font-semibold cursor-pointer"
           >
-            <FaArrowLeft className="w-5 h-5" />
+            <FaArrowLeft className="w-5 h-5 theme-accent" />
             Back
           </button>
           <h1 className="text-2xl font-bold text-blue-400">More Info</h1>
@@ -139,8 +139,8 @@ function PlaceDetailsPageContent() {
 
             {/* 2. Why We Choose This Place */}
             <section className="bg-white/5 backdrop-blur-md border border-blue-500/30 rounded-2xl p-8">
-              <h2 className="text-3xl font-bold text-blue-400 mb-6 flex items-center gap-3">
-                <FaStar className="w-8 h-8" />
+                <h2 className="text-3xl font-bold text-blue-400 mb-6 flex items-center gap-3">
+                <FaStar className="w-8 h-8 theme-accent" />
                 Why We Choose This Place
               </h2>
               <p className="text-gray-300 leading-relaxed text-lg">
@@ -150,8 +150,8 @@ function PlaceDetailsPageContent() {
 
             {/* 3. Location */}
             <section className="bg-white/5 backdrop-blur-md border border-blue-500/30 rounded-2xl p-8">
-              <h2 className="text-3xl font-bold text-blue-400 mb-6 flex items-center gap-3">
-                <FaMapMarkerAlt className="w-8 h-8" />
+                <h2 className="text-3xl font-bold text-blue-400 mb-6 flex items-center gap-3">
+                <FaMapMarkerAlt className="w-8 h-8 theme-accent" />
                 Location
               </h2>
               <div className="space-y-4">
@@ -160,13 +160,13 @@ function PlaceDetailsPageContent() {
                 )}
                 {place.mapLink && (
                   <div className="flex gap-4">
-                    <a
+                      <a
                       href={place.mapLink}
                       target="_blank"
                       rel="noreferrer"
                       className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-semibold transition-all hover:shadow-lg"
                     >
-                      <FaMapMarkerAlt className="w-5 h-5" />
+                      <FaMapMarkerAlt className="w-5 h-5 theme-accent" />
                       View on Google Maps
                     </a>
                   </div>
@@ -177,14 +177,14 @@ function PlaceDetailsPageContent() {
             {/* 4. Ratings */}
             <section className="bg-white/5 backdrop-blur-md border border-yellow-500/30 rounded-2xl p-8">
               <h2 className="text-3xl font-bold text-yellow-400 mb-6 flex items-center gap-3">
-                <FaStar className="w-8 h-8" />
+                <FaStar className="w-8 h-8 theme-accent" />
                 Ratings
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {place.rating && (
                   <div className="text-center">
-                    <div className="flex items-center justify-center gap-2 mb-2">
-                      <FaStar className="w-6 h-6 text-yellow-400" />
+                      <div className="flex items-center justify-center gap-2 mb-2">
+                      <FaStar className="w-6 h-6 theme-accent" />
                       <span className="text-4xl font-bold text-yellow-400">{place.rating}</span>
                     </div>
                     <p className="text-gray-300">Overall Rating</p>
@@ -192,8 +192,8 @@ function PlaceDetailsPageContent() {
                 )}
                 {place.reviews && (
                   <div className="text-center">
-                    <div className="flex items-center justify-center gap-2 mb-2">
-                      <FaUsers className="w-6 h-6 text-blue-400" />
+                      <div className="flex items-center justify-center gap-2 mb-2">
+                      <FaUsers className="w-6 h-6 theme-accent" />
                       <span className="text-4xl font-bold text-blue-400">{place.reviews}</span>
                     </div>
                     <p className="text-gray-300">Total Reviews</p>
@@ -201,8 +201,8 @@ function PlaceDetailsPageContent() {
                 )}
                 {place.price && (
                   <div className="text-center">
-                    <div className="flex items-center justify-center gap-2 mb-2">
-                      <FaTag className="w-6 h-6 text-green-400" />
+                      <div className="flex items-center justify-center gap-2 mb-2">
+                      <FaTag className="w-6 h-6 theme-accent" />
                       <span className="text-4xl font-bold text-green-400">{place.price}</span>
                     </div>
                     <p className="text-gray-300">Price Range</p>

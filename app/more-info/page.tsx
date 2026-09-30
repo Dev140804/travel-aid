@@ -120,7 +120,7 @@ function PlaceDetailsPageContent() {
             onClick={() => router.back()}
             className="flex items-center gap-2 text-slate-300 hover:text-blue-400 transition-colors font-semibold cursor-pointer"
           >
-            <FaArrowLeft className="w-5 h-5" />
+            <FaArrowLeft className="w-5 h-5 theme-accent" />
             Back
           </button>
           <h1 className="text-2xl font-bold text-blue-400">More Info</h1>

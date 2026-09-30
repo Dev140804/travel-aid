@@ -2,6 +2,7 @@ import Link from "next/link";
 import PlacePhotoGallery from "@/components/PlacePhotoGallery";
 import PlaceBackgroundCarousel from "@/components/PlaceBackgroundCarousel";
 import ExpandableHistory from "@/components/ExpandableHistory";
+import { IconPin } from "@/components/Icons";
 import { GoogleGenAI } from "@google/genai";
 
 interface PlaceDetail {
@@ -751,7 +752,7 @@ export default async function PlacePage({ params }: { params: Promise<{ slug?: s
           <section className="mb-6 p-8 rounded-2xl bg-white/10 dark:bg-white/5 backdrop-blur-xl border border-white/20 hover:bg-white/15 transition-all shadow-lg">
             <h2 className="text-3xl font-bold text-[#D4AF37] mb-3 drop-shadow-lg" style={{
               textShadow: '1px 1px 0 #D4AF37, -1px -1px 0 #D4AF37, 1px -1px 0 #D4AF37, -1px 1px 0 #D4AF37',
-            }}>📍 Proper Location</h2>
+            }}><IconPin style={{ color: 'var(--theme-accent)', display: 'inline-block', verticalAlign: 'middle', marginRight: 8 }} /> Proper Location</h2>
             <p className="text-lg mb-4 font-medium drop-shadow-md" style={{
               color: '#F8F9FB',
               textShadow: '1px 1px 2px rgba(0, 0, 0, 0.5)',

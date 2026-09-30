@@ -245,9 +245,9 @@ export default function ItineraryCard({
               <h3 className="text-2xl font-bold text-center sm:text-left" style={{ color: themeColor }}>
                 {titleToDisplay}
                 {typeof currentOption === 'object' && currentOption?.rating && (
-                  <span className="text-gray-300 font-normal ml-1">
+                    <span className="text-gray-300 font-normal ml-1">
                     ({currentOption.rating}
-                    {typeof currentOption.rating === 'number' && currentOption.rating > 0 ? <FaStar className="inline text-yellow-400 ml-1" /> : null})
+                    {typeof currentOption.rating === 'number' && currentOption.rating > 0 ? <FaStar className="inline ml-1 theme-accent" /> : null})
                   </span>
                 )}
               </h3>

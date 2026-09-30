@@ -105,20 +105,21 @@ export default function TransitInfoCard({
   const displayEndTime = calculatedEndTime ? convertTo12Hour(calculatedEndTime) : null;
 
   const getTransitIcon = () => {
+    // All transit icons should use the theme accent color for consistency
     switch (transitMode.toLowerCase()) {
       case "flight":
-        return <FaPlane className="text-blue-500 w-5 h-5" />;
+        return <FaPlane className="w-5 h-5 theme-accent" />;
       case "train":
-        return <FaTrain className="text-orange-500 w-5 h-5" />;
+        return <FaTrain className="w-5 h-5 theme-accent" />;
       case "bus":
-        return <FaBus className="text-green-500 w-5 h-5" />;
+        return <FaBus className="w-5 h-5 theme-accent" />;
       case "car":
       case "personal":
-        return <FaCarSide className="text-red-500 w-5 h-5" />;
+        return <FaCarSide className="w-5 h-5 theme-accent" />;
       case "walk":
-        return <FaPersonWalking className="text-purple-500 w-5 h-5" />;
+        return <FaPersonWalking className="w-5 h-5 theme-accent" />;
       default:
-        return <FaCarSide className="text-gray-500 w-5 h-5" />;
+        return <FaCarSide className="w-5 h-5 theme-accent" />;
     }
   };
 
@@ -217,7 +218,7 @@ export default function TransitInfoCard({
             className="flex-1 flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold text-white transition-all hover:opacity-90"
             style={{ backgroundColor: themeColor }}
           >
-            <FaLink className="w-3 h-3" />
+            <FaLink className="w-3 h-3 theme-accent" />
             Open in Google Maps
           </a>
         </div>

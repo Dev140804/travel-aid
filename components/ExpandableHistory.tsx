@@ -24,7 +24,7 @@ export default function ExpandableHistory({
       >
         <h3 className="text-lg font-semibold text-slate-900">{title}</h3>
         <FaChevronDown
-          className={`w-5 h-5 text-slate-600 transition-transform ${
+          className={`w-5 h-5 theme-accent transition-transform ${
             isExpanded ? "rotate-180" : ""
           }`}
         />

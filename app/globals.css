@@ -68,3 +68,103 @@ body {
 .theme-bg {
   background-color: var(--color-bg);
 }
+
+/* App-wide accent class that maps to the active theme accent token */
+.theme-accent {
+  color: var(--theme-accent) !important;
+}
+
+.theme-accent-fill {
+  fill: var(--theme-accent) !important;
+}
+
+/* Google Places autocomplete dropdown theming (dark/glassmorphism) */
+.pac-container {
+  background: rgba(11,31,58,0.98) !important;
+  color: #F8F9FB !important;
+  border-radius: 14px !important;
+  box-shadow: 0 12px 36px rgba(2,6,23,0.6) !important;
+  padding: 10px !important;
+  z-index: 9999 !important;
+  backdrop-filter: blur(8px) !important;
+  border: 2px solid rgba(212,175,55,0.08) !important;
+}
+
+.pac-item {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 10px !important;
+  border-radius: 10px !important;
+  color: #F8F9FB !important;
+}
+
+.pac-item:hover, .pac-item.pac-item-selected {
+  background: linear-gradient(90deg, #D4AF37, #E8C547) !important;
+  color: #0B1F3A !important;
+}
+
+.pac-icon {
+  filter: invert(1) brightness(2) !important;
+}
+
+.pac-item .pac-matched, .pac-item .pac-item-query {
+  color: #F8F9FB !important;
+  font-weight: 600 !important;
+}
+
+/* Ensure Powered by Google remains visible but fits theme */
+.pac-logo {
+  opacity: 0.95 !important;
+  filter: none !important;
+  margin-top: 6px !important;
+}
+
+/* Refined suggestion item layout to remove white separators and match app UI */
+.pac-container {
+  padding: 8px !important;
+}
+
+.pac-container .pac-item {
+  background: transparent !important;
+  border-radius: 10px !important;
+  margin: 6px 0 !important;
+  padding: 10px 12px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+}
+
+.pac-container .pac-item .pac-icon {
+  width: 18px !important;
+  height: 18px !important;
+  opacity: 0.95 !important;
+  filter: none !important;
+  color: rgba(212,175,55,0.95) !important;
+}
+
+.pac-container .pac-item .pac-item-query,
+.pac-container .pac-item .pac-matched {
+  color: #F8F9FB !important;
+}
+
+.pac-container .pac-item:hover,
+.pac-container .pac-item.pac-item-selected {
+  background: linear-gradient(90deg, #D4AF37, #E8C547) !important;
+  color: #081224 !important;
+  font-weight: 700 !important;
+  box-shadow: 0 6px 18px rgba(212,175,55,0.12) !important;
+}
+
+/* Subtle divider removal: prevent Google styles from adding strong separators */
+.pac-container .pac-item + .pac-item {
+  border-top: none !important;
+}
+
+/* Keep the powered-by logo aligned and visible */
+.pac-container .pac-logo {
+  display: flex !important;
+  justify-content: flex-end !important;
+  padding-right: 8px !important;
+  background: transparent !important;
+}

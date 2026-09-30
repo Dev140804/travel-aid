@@ -3,18 +3,21 @@
 
 export const dynamic = 'force-dynamic';
 
-import { useState, useEffect, Suspense, useMemo } from "react";
+import { useState, useEffect, Suspense, useMemo, useRef } from "react";
+import { useLoadScript, Autocomplete } from "@react-google-maps/api";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import ItineraryCard from "../../components/ItineraryCard";
 import TransitInfoCard from "../../components/TransitInfoCard";
 import MapView from "../../components/Map";
+import VehicleForm from "../../components/VehicleForm";
 import LoadingOverlay from "../../components/LoadingOverlay";
 import AnimatedHeroBackground from "../../components/AnimatedHeroBackground";
 import { cleanActivityDescription } from "../../lib/activityCleaner";
 import { HiSparkles } from "react-icons/hi2";
 import { FaMapLocationDot, FaCalendar, FaMoneyBillWave, FaClock, FaUser, FaLeaf, FaUtensils, FaFloppyDisk, FaHouse, FaPlane, FaCarSide, FaBus } from "react-icons/fa6";
+import { IconCar, IconBus, IconTaxi, IconHome, IconPin, IconMoney } from "../../components/Icons";
 import { MdDirectionsRun } from "react-icons/md";
 
 type Place = {
@@ -29,8 +32,10 @@ type Place = {
 function PlanTripContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const vehicleMode = searchParams?.get("mode") === "vehicle";
 
   const [destination, setDestination] = useState("");
+  const [selectedPlace, setSelectedPlace] = useState<any>(null);
   const [budget, setBudget] = useState("Moderate");
   const [startingLocation, setStartingLocation] = useState("");
   const [transportMode, setTransportMode] = useState("flight");
@@ -51,9 +56,48 @@ function PlanTripContent() {
   const [endDate, setEndDate] = useState(formatDate(threeDaysFromNow));
 
   const [arrivalTime, setArrivalTime] = useState("10:00");
+  const [partySize, setPartySize] = useState<number>(1);
   const [tripTypes, setTripTypes] = useState<string[]>(["Leisure"]);
   const [companion, setCompanion] = useState("Solo");
   const [pace, setPace] = useState("Moderate");
+
+  // Vehicle & driver state (used when ?mode=vehicle)
+  const [vehicleType, setVehicleType] = useState("four-wheeler");
+  const [brand, setBrand] = useState("");
+  const [model, setModel] = useState("");
+  const [variant, setVariant] = useState("");
+  const [year, setYear] = useState<string>(new Date().getFullYear().toString());
+  const [fuel, setFuel] = useState("");
+  const [lastServiceDate, setLastServiceDate] = useState("");
+  const [odometer, setOdometer] = useState<string>("");
+
+  const [drivingExperience, setDrivingExperience] = useState("");
+  const [licenseType, setLicenseType] = useState("");
+  const [comfortableWithLongDrives, setComfortableWithLongDrives] = useState<string | null>(null);
+  const [numberOfDrivers, setNumberOfDrivers] = useState<number>(1);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+
+  // clamp numberOfDrivers when vehicleType changes
+  useEffect(() => {
+    const max = vehicleType === "two-wheeler" ? 2 : 6;
+    if (numberOfDrivers > max) setNumberOfDrivers(max);
+    // reset brand/model when vehicle type changes to avoid cross-contamination
+    setBrand("");
+    setModel("");
+    setFuel("");
+    setLicenseType("");
+    setOdometer("");
+    setDrivingExperience("");
+    setComfortableWithLongDrives(null);
+  }, [vehicleType]);
+
+  const clearFieldError = (field: string) => {
+    setFieldErrors((prev) => {
+      const copy = { ...prev };
+      delete copy[field];
+      return copy;
+    });
+  };
 
   // New options
   const [dietary, setDietary] = useState("None");
@@ -64,6 +108,16 @@ function PlanTripContent() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
+  const [isTerrainLoading, setIsTerrainLoading] = useState(false);
+  const [isDestinationHilly, setIsDestinationHilly] = useState<boolean | null>(null);
+  const [terrainError, setTerrainError] = useState<string | null>(null);
+  const terrainCacheRef = useMemo(() => new Map<string, { isHilly: boolean }>(), []);
+  const autocompleteRef = useRef<any>(null);
+
+  const { isLoaded: isMapsLoaded } = useLoadScript({
+    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
+    libraries: ["places" as any],
+  });
 
   const [generatedDays, setGeneratedDays] = useState<number[]>([]);
   const [hotels, setHotels] = useState<Place[]>([]);
@@ -171,6 +225,69 @@ function PlanTripContent() {
       }
     }
   }, []);
+
+  // Run terrain check only when a place is selected (use selectedPlace coordinates)
+  useEffect(() => {
+    let cancelled = false;
+
+    if (!selectedPlace || !selectedPlace.geometry?.location) {
+      setIsDestinationHilly(null);
+      setTerrainError(null);
+      setIsTerrainLoading(false);
+      return;
+    }
+
+    const lat = selectedPlace.geometry.location.lat();
+    const lng = selectedPlace.geometry.location.lng();
+    const key = `${lat.toFixed(5)},${lng.toFixed(5)}`;
+
+    const cached = terrainCacheRef.get(key);
+    if (cached) {
+      setIsDestinationHilly(cached.isHilly);
+      setIsTerrainLoading(false);
+      setTerrainError(null);
+      return;
+    }
+
+    setIsTerrainLoading(true);
+    setTerrainError(null);
+
+    (async () => {
+      try {
+        const res = await fetch(`/api/terrain?lat=${lat}&lng=${lng}`);
+        const data = await res.json();
+        if (cancelled) return;
+        const isHilly = !!data?.isHilly;
+        terrainCacheRef.set(key, { isHilly });
+        setIsDestinationHilly(isHilly);
+      } catch (err: any) {
+        console.error("Terrain lookup error", err);
+        if (cancelled) return;
+        setIsDestinationHilly(false);
+        setTerrainError(err?.message || "terrain-failed");
+      } finally {
+        if (!cancelled) setIsTerrainLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedPlace, terrainCacheRef]);
+
+  // Clear comfortableWithLongDrives when destination is determined flat
+  useEffect(() => {
+    if (isDestinationHilly === false) {
+      setComfortableWithLongDrives(null);
+      // also clear any validation error for that field
+      setFieldErrors((prev) => {
+        const copy = { ...prev };
+        delete copy.comfortableWithLongDrives;
+        return copy;
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isDestinationHilly]);
 
   useEffect(() => {
     // Don't save until we restored existing state (or have a tripId from server) to avoid wiping stored itinerary on first load.
@@ -618,7 +735,46 @@ function PlanTripContent() {
 
   const generateItinerary = async (hotelOverride?: Place | null) => {
     const totalDays = calculateDays();
-    if (!destination || totalDays <= 0) {
+    // Validation
+    const errors: Record<string, string> = {};
+    if (!destination) errors.destination = "This field is required";
+    if (!startDate) errors.startDate = "This field is required";
+    if (!endDate) errors.endDate = "This field is required";
+    if (new Date(endDate) <= new Date(startDate)) errors.endDate = "End date must be after start date";
+    if (!partySize || partySize < 1) errors.partySize = "Enter number of people traveling";
+
+    if (vehicleMode) {
+      if (!vehicleType) errors.vehicleType = "Select vehicle type";
+      if (!brand) errors.brand = "This field is required";
+      if (!model) errors.model = "This field is required";
+      if (!fuel) errors.fuel = "This field is required";
+      if (!year) errors.year = "This field is required";
+      if (!lastServiceDate) errors.lastServiceDate = "This field is required";
+      const odoNum = Number(odometer);
+      if (!odometer || isNaN(odoNum) || odoNum <= 0) errors.odometer = "Enter a valid odometer reading";
+      const expNum = Number(drivingExperience);
+      if (!drivingExperience || isNaN(expNum) || expNum < 0) errors.drivingExperience = "This field is required";
+      if (!licenseType) errors.licenseType = "This field is required";
+      // Only require hill-drive choice when destination is classified as hilly
+      if (isDestinationHilly && !comfortableWithLongDrives) errors.comfortableWithLongDrives = "Please indicate Yes or No";
+      if (!startingLocation) errors.startingLocation = "This field is required";
+    } else {
+      if (!companion) errors.companion = "This field is required";
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      // mark and scroll to first invalid
+      setTimeout(() => {
+        const el = document.querySelector('[data-invalid="true"]');
+        if (el && typeof (el as HTMLElement).scrollIntoView === 'function') {
+          (el as HTMLElement).scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 50);
+      return;
+    }
+
+    if (totalDays <= 0) {
       setError(
         "Please fill in the destination and ensure end date is after start date.",
       );
@@ -695,12 +851,34 @@ function PlanTripContent() {
           budget,
           dietary,
           transitMode,
+          partySize,
           customNotes,
+          vehicle: vehicleMode
+            ? {
+                vehicleType,
+                brand,
+                model,
+                variant,
+                year,
+                fuel,
+                lastServiceDate,
+                odometer: odometer ? Number(odometer) : null,
+              }
+            : undefined,
+          driver: vehicleMode
+            ? {
+                drivingExperience: drivingExperience ? Number(drivingExperience) : null,
+                licenseType,
+                comfortableWithLongDrives: comfortableWithLongDrives === 'yes',
+                numberOfDrivers,
+              }
+            : undefined,
           places: topPlaces,
           restaurants: topRestaurants,
           hotels: topHotels,
           selectedHotel: preferredHotel,
           selectedStayType,
+          ...(vehicleMode ? { vehicle: { vehicleType, brand, model, variant, year, fuel, lastServiceDate, odometer }, driver: { drivingExperience, licenseType, comfortableWithLongDrives, numberOfDrivers } } : {}),
         }),
       });
 
@@ -727,6 +905,22 @@ function PlanTripContent() {
     }
   };
 
+  const canGenerate = (() => {
+    if (isLoading) return false;
+    if (!destination || !startDate || !endDate) return false;
+    if (!partySize || partySize < 1) return false;
+    if (vehicleMode) {
+      const odoNum = Number(odometer);
+      const expNum = Number(drivingExperience);
+      // If destination is hilly, comfortableWithLongDrives must be selected; if unknown/null treat as optional to avoid blocking
+      const hillOk = isDestinationHilly ? !!comfortableWithLongDrives : true;
+      return !!(
+        vehicleType && brand && model && fuel && year && lastServiceDate && !isNaN(odoNum) && odoNum > 0 && drivingExperience !== "" && !isNaN(expNum) && licenseType && hillOk
+      );
+    }
+    return !!companion;
+  })();
+
   return (
     <div className="min-h-screen bg-[#0B1F3A] text-[#F8F9FB] font-sans relative overflow-hidden">
       <AnimatedHeroBackground />
@@ -741,16 +935,20 @@ function PlanTripContent() {
           >
             ← Back
           </button>
-          <div className="flex items-center gap-2 font-serif">
-            <Image
-              src="/videos/erasebg-transformed.png"
-              alt="Trip Planner"
-              width={32}
-              height={32}
-              className="object-contain"
-            />
-            <span className="text-lg text-[#F8F9FB] font-light tracking-wider">Trip</span>
-            <span className="text-lg text-[#F8F9FB] font-semibold">Planner</span>
+          <div className="flex items-center gap-3 font-serif">
+            <div className="w-16 h-16 flex items-center justify-center">
+              <Image
+                src="/erasebg-transformed.png"
+                alt="Trip Planner Logo"
+                width={60}
+                height={60}
+                className="object-contain filter drop-shadow-lg"
+              />
+            </div>
+            <div className="font-serif">
+              <span className="text-lg text-[#F8F9FB] font-light tracking-wider">Trip</span>
+              <span className="text-lg text-[#D4AF37] font-semibold">Planner</span>
+            </div>
           </div>
           <div className="w-16"></div>
         </div>
@@ -774,45 +972,125 @@ function PlanTripContent() {
             </div>
           )}
 
+          {searchParams?.get("mode") === "vehicle" && (
+            <div className="space-y-6 md:col-span-2">
+              <h3 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#D4AF37] to-[#E8C547] uppercase tracking-wider drop-shadow-lg">
+                Vehicle Details
+              </h3>
+              <VehicleForm
+                vehicleType={vehicleType}
+                setVehicleType={setVehicleType}
+                brand={brand}
+                setBrand={setBrand}
+                model={model}
+                setModel={setModel}
+                variant={variant}
+                setVariant={setVariant}
+                year={year}
+                setYear={setYear}
+                fuel={fuel}
+                setFuel={setFuel}
+                lastServiceDate={lastServiceDate}
+                setLastServiceDate={setLastServiceDate}
+                odometer={odometer}
+                setOdometer={setOdometer}
+                drivingExperience={drivingExperience}
+                setDrivingExperience={setDrivingExperience}
+                licenseType={licenseType}
+                setLicenseType={setLicenseType}
+                comfortableWithLongDrives={comfortableWithLongDrives}
+                setComfortableWithLongDrives={setComfortableWithLongDrives}
+                numberOfDrivers={numberOfDrivers}
+                setNumberOfDrivers={setNumberOfDrivers}
+                fieldErrors={fieldErrors}
+                clearFieldError={clearFieldError}
+                showHillDrive={!!isDestinationHilly}
+              />
+            </div>
+          )}
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-3 md:col-span-2">
               <label className="flex items-center gap-2 text-lg font-bold text-gray-200 uppercase tracking-wide">
                 <FaMapLocationDot className="text-[#D4AF37]" />
                 Where are you going?
+                <span className="text-red-400 ml-2">*</span>
               </label>
-              <input
-                placeholder="e.g. Kyoto, Japan or Paris, France"
-                value={destination}
-                onChange={(e) => setDestination(e.target.value)}
-                className="w-full p-4 rounded-xl bg-white/10 border border-white/20 text-[#F8F9FB] placeholder-gray-400 focus:ring-2 focus:ring-[#D4AF37] focus:border-transparent outline-none transition-all backdrop-blur-sm hover:bg-white/15"
-              />
+              {isMapsLoaded ? (
+                <Autocomplete
+                  onLoad={(auto) => { autocompleteRef.current = auto; }}
+                  onPlaceChanged={() => {
+                    try {
+                      const place = autocompleteRef.current.getPlace();
+                      if (place?.formatted_address) setDestination(place.formatted_address);
+                      else if (place?.name) setDestination(place.name);
+                      setSelectedPlace(place || null);
+                      clearFieldError('destination');
+                    } catch (err) {
+                      console.error('place changed error', err);
+                    }
+                  }}
+                >
+                  <input
+                    name="destination"
+                    autoComplete="off"
+                    spellCheck={false}
+                    aria-autocomplete="list"
+                    role="combobox"
+                    placeholder="e.g. Kyoto, Japan or Paris, France"
+                    value={destination}
+                    onChange={(e) => { setDestination(e.target.value); setSelectedPlace(null); clearFieldError('destination'); /* don't trigger terrain until place selected */ }}
+                    className={`w-full p-4 rounded-xl bg-white/10 border ${fieldErrors.destination ? 'border-red-500' : 'border-white/20'} text-[#F8F9FB] placeholder-gray-400 focus:ring-2 focus:ring-[#D4AF37] focus:border-transparent outline-none transition-all backdrop-blur-sm hover:bg-white/15`}
+                    data-invalid={!!fieldErrors.destination}
+                  />
+                </Autocomplete>
+              ) : (
+                  <input
+                    name="destination"
+                    autoComplete="off"
+                    spellCheck={false}
+                    aria-autocomplete="list"
+                    role="combobox"
+                    placeholder="e.g. Kyoto, Japan or Paris, France"
+                    value={destination}
+                    onChange={(e) => { setDestination(e.target.value); setSelectedPlace(null); clearFieldError('destination'); }}
+                    className={`w-full p-4 rounded-xl bg-white/10 border ${fieldErrors.destination ? 'border-red-500' : 'border-white/20'} text-[#F8F9FB] placeholder-gray-400 focus:ring-2 focus:ring-[#D4AF37] focus:border-transparent outline-none transition-all backdrop-blur-sm hover:bg-white/15`}
+                    data-invalid={!!fieldErrors.destination}
+                  />
+              )}
             </div>
 
             <div className="space-y-3">
               <label className="flex items-center gap-2 text-lg font-bold text-gray-200 uppercase tracking-wide">
                 <FaCalendar className="text-[#D4AF37]" />
                 Start Date
+                <span className="text-red-400 ml-2">*</span>
               </label>
               <input
                 type="date"
                 value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                className="w-full p-4 rounded-xl bg-white/10 border border-white/20 text-[#F8F9FB] placeholder-gray-400 focus:ring-2 focus:ring-[#D4AF37] focus:border-transparent outline-none transition-all backdrop-blur-sm hover:bg-white/15"
+                onChange={(e) => { setStartDate(e.target.value); clearFieldError('startDate'); }}
+                className={`w-full p-4 rounded-xl bg-white/10 border ${fieldErrors.startDate ? 'border-red-500' : 'border-white/20'} text-[#F8F9FB] placeholder-gray-400 focus:ring-2 focus:ring-[#D4AF37] focus:border-transparent outline-none transition-all backdrop-blur-sm hover:bg-white/15`}
+                data-invalid={!!fieldErrors.startDate}
               />
+              {fieldErrors.startDate && <p className="text-red-400 text-sm mt-1">{fieldErrors.startDate}</p>}
             </div>
 
             <div className="space-y-3">
               <label className="flex items-center gap-2 text-lg font-bold text-gray-200 uppercase tracking-wide">
                 <FaCalendar className="text-orange-400" />
                 End Date
+                <span className="text-red-400 ml-2">*</span>
               </label>
               <input
                 type="date"
                 min={startDate}
                 value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                className="w-full p-4 rounded-xl bg-white/10 border border-white/20 text-[#F8F9FB] placeholder-gray-400 focus:ring-2 focus:ring-[#D4AF37] focus:border-transparent outline-none transition-all backdrop-blur-sm hover:bg-white/15"
+                onChange={(e) => { setEndDate(e.target.value); clearFieldError('endDate'); }}
+                className={`w-full p-4 rounded-xl bg-white/10 border ${fieldErrors.endDate ? 'border-red-500' : 'border-white/20'} text-[#F8F9FB] placeholder-gray-400 focus:ring-2 focus:ring-[#D4AF37] focus:border-transparent outline-none transition-all backdrop-blur-sm hover:bg-white/15`}
+                data-invalid={!!fieldErrors.endDate}
               />
+              {fieldErrors.endDate && <p className="text-red-400 text-sm mt-1">{fieldErrors.endDate}</p>}
             </div>
 
             <div className="space-y-3">
@@ -836,12 +1114,14 @@ function PlanTripContent() {
                 <FaClock className="text-[#D4AF37]" />
                 Arrival Time
               </label>
-              <input
-                type="time"
-                value={arrivalTime}
-                onChange={(e) => setArrivalTime(e.target.value)}
-                className="w-full p-4 rounded-xl bg-white/10 border border-white/20 text-[#F8F9FB] placeholder-gray-400 focus:ring-2 focus:ring-[#D4AF37] focus:border-transparent outline-none transition-all backdrop-blur-sm hover:bg-white/15"
-              />
+              {!vehicleMode && (
+                <input
+                  type="time"
+                  value={arrivalTime}
+                  onChange={(e) => setArrivalTime(e.target.value)}
+                  className="w-full p-4 rounded-xl bg-white/10 border border-white/20 text-[#F8F9FB] placeholder-gray-400 focus:ring-2 focus:ring-[#D4AF37] focus:border-transparent outline-none transition-all backdrop-blur-sm hover:bg-white/15"
+                />
+              )}
             </div>
 
             <div className="space-y-3 md:col-span-2">
@@ -866,27 +1146,42 @@ function PlanTripContent() {
               </div>
             </div>
 
+            <div className="space-y-3">
+              <label className="flex items-center gap-2 text-lg font-bold text-gray-200 uppercase tracking-wide">
+                <FaUser className="text-[#D4AF37]" />
+                Number of people traveling
+                <span className="text-red-400 ml-2">*</span>
+              </label>
+              <input type="number" min={1} max={20} value={partySize} onChange={(e) => { setPartySize(Number(e.target.value) || 1); clearFieldError('partySize'); }} className={`w-40 p-4 rounded-xl bg-white/10 border ${fieldErrors.partySize ? 'border-red-500' : 'border-white/20'} text-[#F8F9FB]`} data-invalid={!!fieldErrors.partySize} />
+              {fieldErrors.partySize && <p className="text-red-400 text-sm mt-1">{fieldErrors.partySize}</p>}
+            </div>
+
             <div className="space-y-3 md:col-span-2">
               <label className="flex items-center gap-2 text-lg font-bold text-gray-200 uppercase tracking-wide">
                 <FaUser className="text-[#D4AF37]" />
                 Who&apos;s Going?
+                <span className="text-red-400 ml-2">*</span>
               </label>
               <div className="flex flex-wrap gap-3">
-                {["Solo", "Couple", "Family", "Friends", "Business"].map(
-                  (c) => (
-                    <button
-                      key={c}
-                      onClick={() => setCompanion(c)}
-                      className={`px-6 py-2.5 rounded-full text-sm font-bold transition-all transform hover:scale-110 ${
-                        companion === c
-                          ? "bg-gradient-to-r from-[#D4AF37] to-[#E8C547] text-[#0B1F3A] shadow-lg shadow-[#D4AF37]/30 scale-110"
-                          : "bg-white/10 border border-white/20 text-gray-200 hover:bg-white/15 backdrop-blur-sm"
-                      }`}
-                    >
-                      {c}
-                    </button>
-                  ),
-                )}
+                {[
+                  "Solo",
+                  "Couple",
+                  "Family",
+                  "Friends",
+                  "Business",
+                ].map((c) => (
+                  <button
+                    key={c}
+                    onClick={() => { setCompanion(c); clearFieldError('companion'); }}
+                    className={`px-6 py-2.5 rounded-full text-sm font-bold transition-all transform hover:scale-110 ${
+                      companion === c
+                        ? "bg-gradient-to-r from-[#D4AF37] to-[#E8C547] text-[#0B1F3A] shadow-lg shadow-[#D4AF37]/30 scale-110"
+                        : "bg-white/10 border border-white/20 text-gray-200 hover:bg-white/15 backdrop-blur-sm"
+                    }`}
+                  >
+                    {c}
+                  </button>
+                ))}
               </div>
             </div>
 
@@ -949,70 +1244,77 @@ function PlanTripContent() {
               <label className="flex items-center gap-2 text-lg font-bold text-gray-200 uppercase tracking-wide">
                 <FaHouse className="text-[#D4AF37]" />
                 Starting Location / Home Base
+                <span className="text-red-400 ml-2">*</span>
               </label>
               <input
                 type="text"
                 placeholder="e.g., Chandigarh, My Home, Delhi"
                 value={startingLocation}
-                onChange={(e) => setStartingLocation(e.target.value)}
-                className="w-full p-4 rounded-xl bg-white/10 border border-white/20 text-[#F8F9FB] focus:ring-2 focus:ring-[#D4AF37] focus:border-transparent outline-none transition-all backdrop-blur-sm hover:bg-white/15 placeholder-gray-400"
+                onChange={(e) => { setStartingLocation(e.target.value); clearFieldError('startingLocation'); }}
+                className={`w-full p-4 rounded-xl bg-white/10 border ${fieldErrors.startingLocation ? 'border-red-500' : 'border-white/20'} text-[#F8F9FB] focus:ring-2 focus:ring-[#D4AF37] focus:border-transparent outline-none transition-all backdrop-blur-sm hover:bg-white/15 placeholder-gray-400`}
+                data-invalid={!!fieldErrors.startingLocation}
               />
+              {fieldErrors.startingLocation && <p className="text-red-400 text-sm mt-1">{fieldErrors.startingLocation}</p>}
             </div>
 
-            <div className="space-y-3">
-              <label className="flex items-center gap-2 text-lg font-bold text-gray-200 uppercase tracking-wide">
-                <FaPlane className="text-[#D4AF37]" />
-                How will you reach the destination?
-              </label>
-              <select
-                value={transportMode}
-                onChange={(e) => setTransportMode(e.target.value)}
-                className="w-full p-4 rounded-xl bg-white/10 border border-white/20 text-[#F8F9FB] focus:ring-2 focus:ring-[#D4AF37] focus:border-transparent outline-none transition-all backdrop-blur-sm hover:bg-white/15 appearance-none cursor-pointer"
-              >
-                <option value="flight" className="bg-slate-800">Flight</option>
-                <option value="train" className="bg-slate-800">Train</option>
-                <option value="bus" className="bg-slate-800">Bus</option>
-                <option value="personal" className="bg-slate-800">Personal Vehicle</option>
-                <option value="rental" className="bg-slate-800">Rental Car / Driver</option>
-              </select>
-            </div>
+            {!vehicleMode && (
+              <>
+                <div className="space-y-3">
+                  <label className="flex items-center gap-2 text-lg font-bold text-gray-200 uppercase tracking-wide">
+                    <FaPlane className="text-[#D4AF37]" />
+                    How will you reach the destination?
+                  </label>
+                  <select
+                    value={transportMode}
+                    onChange={(e) => setTransportMode(e.target.value)}
+                    className="w-full p-4 rounded-xl bg-white/10 border border-white/20 text-[#F8F9FB] focus:ring-2 focus:ring-[#D4AF37] focus:border-transparent outline-none transition-all backdrop-blur-sm hover:bg-white/15 appearance-none cursor-pointer"
+                  >
+                    <option value="flight" className="bg-slate-800">Flight</option>
+                    <option value="train" className="bg-slate-800">Train</option>
+                    <option value="bus" className="bg-slate-800">Bus</option>
+                    <option value="personal" className="bg-slate-800">Personal Vehicle</option>
+                    <option value="rental" className="bg-slate-800">Rental Car / Driver</option>
+                  </select>
+                </div>
 
-            {["train", "bus", "flight"].includes(transportMode) && (
-              <div className="space-y-3">
-                <label className="flex items-center gap-2 text-lg font-bold text-gray-200 uppercase tracking-wide">
-                  <FaCarSide className="text-[#D4AF37]" />
-                  {transportMode === "flight" ? "How will you reach the airport?" : `How will you reach the ${transportMode === "train" ? "railway" : "bus"} station?`}
-                </label>
-                <select
-                  value={intermediateTransport}
-                  onChange={(e) => setIntermediateTransport(e.target.value)}
-                  className="w-full p-4 rounded-xl bg-white/10 border border-white/20 text-[#F8F9FB] focus:ring-2 focus:ring-[#D4AF37] focus:border-transparent outline-none transition-all backdrop-blur-sm hover:bg-white/15 appearance-none cursor-pointer"
-                >
-                  <option value="personal" className="bg-slate-800">Personal Vehicle</option>
-                  <option value="public" className="bg-slate-800">Public Transport (Bus/Metro)</option>
-                  <option value="taxi" className="bg-slate-800">Taxi / Rideshare</option>
-                  <option value="driver" className="bg-slate-800">Hired Driver</option>
-                </select>
-              </div>
+                {["train", "bus", "flight"].includes(transportMode) && (
+                  <div className="space-y-3">
+                    <label className="flex items-center gap-2 text-lg font-bold text-gray-200 uppercase tracking-wide">
+                      <FaCarSide className="text-[#D4AF37]" />
+                      {transportMode === "flight" ? "How will you reach the airport?" : `How will you reach the ${transportMode === "train" ? "railway" : "bus"} station?`}
+                    </label>
+                    <select
+                      value={intermediateTransport}
+                      onChange={(e) => setIntermediateTransport(e.target.value)}
+                      className="w-full p-4 rounded-xl bg-white/10 border border-white/20 text-[#F8F9FB] focus:ring-2 focus:ring-[#D4AF37] focus:border-transparent outline-none transition-all backdrop-blur-sm hover:bg-white/15 appearance-none cursor-pointer"
+                    >
+                      <option value="personal" className="bg-slate-800">Personal Vehicle</option>
+                      <option value="public" className="bg-slate-800">Public Transport (Bus/Metro)</option>
+                      <option value="taxi" className="bg-slate-800">Taxi / Rideshare</option>
+                      <option value="driver" className="bg-slate-800">Hired Driver</option>
+                    </select>
+                  </div>
+                )}
+
+                <div className="space-y-3">
+                  <label className="flex items-center gap-2 text-lg font-bold text-gray-200 uppercase tracking-wide">
+                    <FaBus className="text-[#D4AF37]" />
+                    In-destination Transit Mode
+                  </label>
+                  <select
+                    value={transitMode}
+                    onChange={(e) => setTransitMode(e.target.value)}
+                    className="w-full p-4 rounded-xl bg-white/10 border border-white/20 text-[#F8F9FB] focus:ring-2 focus:ring-[#D4AF37] focus:border-transparent outline-none transition-all backdrop-blur-sm hover:bg-white/15 appearance-none cursor-pointer"
+                  >
+                    <option value="Any" className="bg-slate-800">Any / Mixed</option>
+                    <option value="Public Transit" className="bg-slate-800">Public Transit (Subway/Bus)</option>
+                    <option value="Walking" className="bg-slate-800">Walking / Pedestrian</option>
+                    <option value="Driving / Rental Car" className="bg-slate-800">Driving / Rental Car</option>
+                    <option value="Rideshare / Taxi" className="bg-slate-800">Rideshare / Taxi</option>
+                  </select>
+                </div>
+              </>
             )}
-
-            <div className="space-y-3">
-              <label className="flex items-center gap-2 text-lg font-bold text-gray-200 uppercase tracking-wide">
-                <FaBus className="text-[#D4AF37]" />
-                In-destination Transit Mode
-              </label>
-              <select
-                value={transitMode}
-                onChange={(e) => setTransitMode(e.target.value)}
-                className="w-full p-4 rounded-xl bg-white/10 border border-white/20 text-[#F8F9FB] focus:ring-2 focus:ring-[#D4AF37] focus:border-transparent outline-none transition-all backdrop-blur-sm hover:bg-white/15 appearance-none cursor-pointer"
-              >
-                <option value="Any" className="bg-slate-800">Any / Mixed</option>
-                <option value="Public Transit" className="bg-slate-800">Public Transit (Subway/Bus)</option>
-                <option value="Walking" className="bg-slate-800">Walking / Pedestrian</option>
-                <option value="Driving / Rental Car" className="bg-slate-800">Driving / Rental Car</option>
-                <option value="Rideshare / Taxi" className="bg-slate-800">Rideshare / Taxi</option>
-              </select>
-            </div>
 
             <div className="space-y-3 md:col-span-2">
               <label className="text-lg font-bold text-gray-200 uppercase tracking-wide">
@@ -1135,10 +1437,10 @@ function PlanTripContent() {
                       <div className="bg-white dark:bg-zinc-800 p-6 rounded-2xl border-l-4 border-green-500">
                         <div className="flex items-start gap-4 mb-4">
                           <div className="text-3xl">
-                            {intermediateTransport === "personal" && "🚗"}
-                            {intermediateTransport === "public" && "🚌"}
-                            {intermediateTransport === "taxi" && "🚕"}
-                            {intermediateTransport === "driver" && "🚙"}
+                            {intermediateTransport === "personal" && <IconCar style={{ color: 'var(--theme-accent)' }} />}
+                            {intermediateTransport === "public" && <IconBus style={{ color: 'var(--theme-accent)' }} />}
+                            {intermediateTransport === "taxi" && <IconTaxi style={{ color: 'var(--theme-accent)' }} />}
+                            {intermediateTransport === "driver" && <IconCar style={{ color: 'var(--theme-accent)' }} />}
                           </div>
                           <div className="flex-1">
                             <h3 className="font-bold text-lg text-zinc-900 dark:text-[#F8F9FB] mb-1">
@@ -1164,7 +1466,7 @@ function PlanTripContent() {
                             </p>
                           </div>
                           <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg border border-green-200 dark:border-green-900/30">
-                            <p className="text-xs text-zinc-600 dark:text-zinc-400 font-semibold mb-1">📍 Distance</p>
+                            <p className="text-xs text-zinc-600 dark:text-zinc-400 font-semibold mb-1"><IconPin style={{ display: 'inline-block', verticalAlign: 'middle', color: 'var(--theme-accent)' }} /> Distance</p>
                             <p className="text-lg font-bold text-green-600 dark:text-[#D4AF37]">
                               {intermediateTransport === "personal" && "25-35 km"}
                               {intermediateTransport === "public" && "20-30 km"}
@@ -1353,7 +1655,7 @@ function PlanTripContent() {
                     {transportMode === "personal" && (
                       <div className="bg-white dark:bg-zinc-800 p-6 rounded-2xl border-l-4 border-purple-500">
                         <div className="flex items-start gap-4 mb-4">
-                          <div className="text-3xl">🚗</div>
+                          <div className="text-3xl"><IconCar style={{ color: 'var(--theme-accent)' }} /></div>
                           <div className="flex-1">
                             <h3 className="font-bold text-lg text-zinc-900 dark:text-[#F8F9FB] mb-1">
                               Direct Journey: {startingLocation} → {destination}
@@ -1408,7 +1710,7 @@ function PlanTripContent() {
                     {transportMode === "rental" && (
                       <div className="bg-white dark:bg-zinc-800 p-6 rounded-2xl border-l-4 border-indigo-500">
                         <div className="flex items-start gap-4 mb-4">
-                          <div className="text-3xl">🚙</div>
+                          <div className="text-3xl"><IconCar style={{ color: 'var(--theme-accent)' }} /></div>
                           <div className="flex-1">
                             <h3 className="font-bold text-lg text-zinc-900 dark:text-[#F8F9FB] mb-1">
                               Rental Journey: {startingLocation} → {destination}
@@ -1435,7 +1737,7 @@ function PlanTripContent() {
                             <p className="text-xs text-zinc-500 dark:text-zinc-500 mt-1">Approximate</p>
                           </div>
                           <div className="bg-indigo-50 dark:bg-indigo-900/20 p-3 rounded-lg border border-indigo-200 dark:border-indigo-900/30">
-                            <p className="text-xs text-zinc-600 dark:text-zinc-400 font-semibold mb-1">💰 Rental Cost</p>
+                            <p className="text-xs text-zinc-600 dark:text-zinc-400 font-semibold mb-1"><IconMoney style={{ display: 'inline-block', verticalAlign: 'middle', color: 'var(--theme-accent)' }} /> Rental Cost</p>
                             <p className="text-lg font-bold text-indigo-600 dark:text-indigo-400">
                               ₹4000-8000
                             </p>
@@ -1476,8 +1778,8 @@ function PlanTripContent() {
                 <div className="bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-900/10 dark:to-amber-900/10 rounded-3xl p-6 md:p-10 shadow-sm border border-orange-200 dark:border-orange-900/30 relative overflow-hidden">
                   <div className="absolute top-0 left-0 w-2 h-full bg-orange-500 rounded-l-3xl"></div>
                   <h2 className="text-3xl font-bold mb-8 flex items-center gap-4">
-                    <span className="flex items-center justify-center w-12 h-12 rounded-full bg-orange-100 dark:bg-orange-900/40 text-orange-600 dark:text-orange-400 text-xl">
-                      🏠
+                      <span className="flex items-center justify-center w-12 h-12 rounded-full bg-orange-100 dark:bg-orange-900/40 text-orange-600 dark:text-orange-400 text-xl">
+                      <IconHome style={{ color: 'var(--theme-accent)' }} />
                     </span>
                     Complete Return Journey to {startingLocation}
                   </h2>
@@ -1488,10 +1790,10 @@ function PlanTripContent() {
                       <div className="bg-white dark:bg-zinc-800 p-6 rounded-2xl border-l-4 border-orange-500">
                         <div className="flex items-start gap-4 mb-4">
                           <div className="text-3xl">
-                            {intermediateTransport === "personal" && "🚗"}
-                            {intermediateTransport === "public" && "🚌"}
-                            {intermediateTransport === "taxi" && "🚕"}
-                            {intermediateTransport === "driver" && "🚙"}
+                            {intermediateTransport === "personal" && <IconCar style={{ color: 'var(--theme-accent)' }} />}
+                            {intermediateTransport === "public" && <IconBus style={{ color: 'var(--theme-accent)' }} />}
+                            {intermediateTransport === "taxi" && <IconTaxi style={{ color: 'var(--theme-accent)' }} />}
+                            {intermediateTransport === "driver" && <IconCar style={{ color: 'var(--theme-accent)' }} />}
                           </div>
                           <div className="flex-1">
                             <h3 className="font-bold text-lg text-zinc-900 dark:text-[#F8F9FB] mb-1">
@@ -1505,7 +1807,7 @@ function PlanTripContent() {
                         
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
                           <div className="bg-orange-50 dark:bg-orange-900/20 p-3 rounded-lg border border-orange-200 dark:border-orange-900/30">
-                            <p className="text-xs text-zinc-600 dark:text-zinc-400 font-semibold mb-1">⏱️ Duration</p>
+                            <p className="text-xs text-zinc-600 dark:text-zinc-400 font-semibold mb-1"><FaCalendar className="inline-block mr-1 theme-accent" /> Duration</p>
                             <p className="text-lg font-bold text-orange-600 dark:text-orange-400">
                               {intermediateTransport === "personal" && "35-45 min"}
                               {intermediateTransport === "public" && "50-70 min"}
@@ -1523,7 +1825,7 @@ function PlanTripContent() {
                             </p>
                           </div>
                           <div className="bg-orange-50 dark:bg-orange-900/20 p-3 rounded-lg border border-orange-200 dark:border-orange-900/30">
-                            <p className="text-xs text-zinc-600 dark:text-zinc-400 font-semibold mb-1">💰 Cost</p>
+                            <p className="text-xs text-zinc-600 dark:text-zinc-400 font-semibold mb-1"><IconMoney className="inline-block mr-1 theme-accent" /> Cost</p>
                             <p className="text-lg font-bold text-orange-600 dark:text-orange-400">
                               {intermediateTransport === "personal" && "₹200-300"}
                               {intermediateTransport === "public" && "₹50-100"}
@@ -1772,7 +2074,7 @@ function PlanTripContent() {
                     {transportMode === "personal" && (
                       <div className="bg-white dark:bg-zinc-800 p-6 rounded-2xl border-l-4 border-red-500">
                         <div className="flex items-start gap-4 mb-4">
-                          <div className="text-3xl">🚗</div>
+                          <div className="text-3xl"><IconCar style={{ color: 'var(--theme-accent)' }} /></div>
                           <div className="flex-1">
                             <h3 className="font-bold text-lg text-zinc-900 dark:text-[#F8F9FB] mb-1">
                               Return Journey: {destination} → {startingLocation}

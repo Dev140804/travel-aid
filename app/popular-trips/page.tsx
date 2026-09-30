@@ -6,6 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import AnimatedHeroBackground from "@/components/AnimatedHeroBackground";
 import { FaArrowRight, FaStar } from "react-icons/fa6";
+import { IconCalendar, IconMoney, IconPin } from "@/components/Icons";
 
 interface Trip {
   id: string;
@@ -161,7 +162,7 @@ export default function PopularTripsPage() {
                 <div className="flex-1 min-w-64">
                   <input
                     type="text"
-                    placeholder="🔍 Search by destination, hotel..."
+                    placeholder="Search by destination, hotel..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-[#F8F9FB] placeholder-slate-400 focus:outline-none focus:border-[#D4AF37] transition-colors"
@@ -175,7 +176,7 @@ export default function PopularTripsPage() {
                   <option value="none">Sort By</option>
                   <option value="rating-high">⭐ Rating: High to Low</option>
                   <option value="rating-low">⭐ Rating: Low to High</option>
-                  <option value="newest">📅 Newest First</option>
+                  <option value="newest">Newest First</option>
                 </select>
                 <button
                   onClick={() => {
@@ -354,18 +355,16 @@ export default function PopularTripsPage() {
                       <h3 className="text-xl font-bold text-[#D4AF37] mb-1 group-hover:text-[#E8C547] transition-colors">
                         {trip.destination.toUpperCase()}
                       </h3>
-                      <p className="text-sm text-slate-400 mb-4">
-                        🏨 {trip.selectedHotel}
-                      </p>
+                      <p className="text-sm text-slate-400 mb-4"><IconPin style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: 6, color: 'var(--theme-accent)' }} /> {trip.selectedHotel}</p>
 
                       {/* Trip Details */}
                       <div className="space-y-2 mb-4 text-sm">
                         <div className="flex items-center justify-between">
-                          <span className="text-slate-400">📅 Duration:</span>
+                          <span className="text-slate-400"><IconCalendar style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: 6, color: 'var(--theme-accent)' }} /> Duration:</span>
                           <span className="text-slate-200 font-semibold">{trip.days} days</span>
                         </div>
                         <div className="flex items-center justify-between">
-                          <span className="text-slate-400">💰 Budget:</span>
+                          <span className="text-slate-400"><IconMoney style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: 6, color: 'var(--theme-accent)' }} /> Budget:</span>
                           <span className="text-slate-200 font-semibold">{trip.budget}</span>
                         </div>
                         <div className="flex items-center justify-between">

@@ -59,13 +59,13 @@ export default function Dashboard() {
           {isLoggedIn ? (
             // Settings Icon with Dropdown (When Logged In)
             <div className="relative">
-              <button
+                <button
                 onClick={() => setShowSettings(!showSettings)}
                 className="p-2 hover:bg-[#D4AF37]/20 rounded-lg transition-colors cursor-pointer"
                 title="Settings"
               >
                 <svg
-                  className="w-6 h-6 text-[#D4AF37]"
+                  className="w-6 h-6 theme-accent"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -88,12 +88,12 @@ export default function Dashboard() {
               {/* Dropdown Menu */}
               {showSettings && (
                 <div className="absolute right-0 mt-2 w-56 bg-[#0B1F3A]/95 border border-[#D4AF37]/30 rounded-lg shadow-lg backdrop-blur-md z-50">
-                  <Link
+                    <Link
                     href="/profile"
                     className="flex items-center gap-3 px-4 py-3 text-sm text-[#F8F9FB] hover:bg-[#D4AF37]/20 border-b border-[#D4AF37]/10 transition-colors cursor-pointer"
                     onClick={() => setShowSettings(false)}
                   >
-                    <FaUser className="text-[#D4AF37] w-4 h-4" />
+                    <FaUser className="w-4 h-4 theme-accent" />
                     Profile
                   </Link>
                   <Link
@@ -101,7 +101,7 @@ export default function Dashboard() {
                     className="flex items-center gap-3 px-4 py-3 text-sm text-[#F8F9FB] hover:bg-[#D4AF37]/20 border-b border-[#D4AF37]/10 transition-colors cursor-pointer"
                     onClick={() => setShowSettings(false)}
                   >
-                    <FaBookmark className="text-[#D4AF37] w-4 h-4" />
+                    <FaBookmark className="w-4 h-4 theme-accent" />
                     Saved Trips
                   </Link>
                   <Link
@@ -109,7 +109,7 @@ export default function Dashboard() {
                     className="flex items-center gap-3 px-4 py-3 text-sm text-[#F8F9FB] hover:bg-[#D4AF37]/20 border-b border-[#D4AF37]/10 transition-colors cursor-pointer"
                     onClick={() => setShowSettings(false)}
                   >
-                    <FaPalette className="text-[#D4AF37] w-4 h-4" />
+                    <FaPalette className="w-4 h-4 theme-accent" />
                     Theme
                   </Link>
                   <Link
@@ -117,14 +117,14 @@ export default function Dashboard() {
                     className="flex items-center gap-3 px-4 py-3 text-sm text-[#F8F9FB] hover:bg-[#D4AF37]/20 border-b border-[#D4AF37]/10 transition-colors cursor-pointer"
                     onClick={() => setShowSettings(false)}
                   >
-                    <FaCircleInfo className="text-[#D4AF37] w-4 h-4" />
+                    <FaCircleInfo className="w-4 h-4 theme-accent" />
                     About
                   </Link>
                           <Link
                     href="/signout"
                     className="w-full flex items-center gap-3 text-left px-4 py-3 text-sm text-[#F8F9FB] hover:bg-[#D4AF37]/20 transition-colors cursor-pointer"
                   >
-                    <FaRightFromBracket className="text-[#D4AF37] w-4 h-4" />
+                    <FaRightFromBracket className="w-4 h-4 theme-accent" />
                     Sign Out
                   </Link>
                 </div>
@@ -174,6 +174,12 @@ export default function Dashboard() {
                 className="flex items-center justify-center px-8 py-4 text-lg font-bold rounded-full bg-gradient-to-r from-[#D4AF37] to-[#E8C547] text-[#0B1F3A] hover:shadow-2xl hover:shadow-[#D4AF37]/50 transition-all transform hover:scale-105 active:scale-95 shadow-lg backdrop-blur-sm cursor-pointer"
               >
                 Start Planning Now
+              </Link>
+              <Link
+                href="/plan-trip?mode=vehicle"
+                className="flex items-center justify-center px-8 py-4 text-lg font-bold rounded-full border-2 border-[#D4AF37] text-[#D4AF37] hover:bg-[#D4AF37]/10 transition-all transform hover:scale-105 active:scale-95 backdrop-blur-sm bg-[#0B1F3A]/30 cursor-pointer"
+              >
+                Plan With Your Vehicle
               </Link>
               <Link
                 href="/popular-trips"
